@@ -110,7 +110,7 @@ class CodeGrantFlow(SessionManager):
             "client_secret": self.client_secret,
             "code": code,
             "grant_type": "authorization_code",
-            "redirect_url": self.redirect
+            "redirect_uri": self.redirect
         }
 
         try:
