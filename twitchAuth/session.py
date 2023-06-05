@@ -9,7 +9,7 @@ from twitchAuth.exceptions import SaveSessionException, SessionNotFoundException
 class Session:
     id: str
     type: str
-    scopes: list[str] = field(default_factory=list[str])
+    scopes: list = field(default_factory=list)
     status: str = SESSION_STATE_PENDING
 
 sessions = {}
