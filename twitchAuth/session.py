@@ -25,7 +25,7 @@ class SessionManager:
         self.sessions = sessions
         self.token_type = session_type
 
-    def new_session(self, scopes: list[str]) -> Session:
+    def new_session(self, scopes: list) -> Session:
         session = Session(id=UUID().__str__(), type=self.token_type, scopes=scopes)
         self.save_session(session=session)
         return session
