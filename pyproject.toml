@@ -1,0 +1,12 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "twitch-auth"
+version = "0.0.1"
+authors = [{ name = "Negomir" , email = "miloss.ned99@gmail.com" }]
+description = "LIB providing implementations of twitch's oauth2 requests."
+dependencies={
+	"httpx"
+}
