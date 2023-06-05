@@ -82,7 +82,7 @@ class CodeGrantFlow(SessionManager):
         queries = {
             "client_id": self.client_id,
             "force_verify": force_verify,
-            "redirect_url": self.redirect,
+            "redirect_uri": self.redirect,
             "response_type": "code",
             "scope": "%20".join(session.scopes),
             "state": session_id

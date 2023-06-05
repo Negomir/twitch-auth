@@ -31,7 +31,7 @@ class ImplicitGrantFlow(SessionManager):
         queries = {
             "client_id": "",
             "force_verify": False,
-            "redirect_url": self.redirect_url,
+            "redirect_uri": self.redirect_url,
             "response_type": "token",
             "scope": "%20".join(session.scopes),
             "state": session.id
