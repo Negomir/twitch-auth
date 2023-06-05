@@ -7,7 +7,7 @@ class Token:
     type: str = ""
     token: str = ""
     token_expire: int = 0
-    scopes: list[str] = field(default_factory=list[str])
+    scopes: list = field(default_factory=list)
 
     def access_expired(self) -> bool:
         return int(time()) > self.token_expire
