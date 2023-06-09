@@ -14,32 +14,35 @@ class Session:
 
 sessions = {}
 class SessionStore:
-    def save(self, session: Session):
-        sessions[session.id] = session
+    def save(self, username: str, session: Session):
+        user = sessions.get("username")
+        if not user:
+            sessions["username"] = {}
+        sessions[username][session.id] = session
 
-    def get(self, id: str) -> Union[Session, None]:
-        return sessions[id]
+    def get(self, username: str, id: str) -> Union[Session, None]:
+        return sessions[username][id]
 
 class SessionManager:
     def __init__(self, sessions: SessionStore, session_type: str) -> None:
         self.sessions = sessions
         self.token_type = session_type
 
-    def new_session(self, scopes: list) -> Session:
+    def new_session(self, username: str, scopes: list) -> Session:
         session = Session(id=UUID().__str__(), type=self.token_type, scopes=scopes)
-        self.save_session(session=session)
+        self.save_session(username=username, session=session)
         return session
 
-    def get_session(self, id: str) -> Session:
-        session = self.sessions.get(id=id)
+    def get_session(self, username: str, id: str) -> Session:
+        session = self.sessions.get(username=username, id=id)
         if not session:
             raise SessionNotFoundException(id)
 
         return session
 
-    def save_session(self, session: Session):
+    def save_session(self, username: str, session: Session):
         try:
-            self.sessions.save(session=session)
+            self.sessions.save(username=username, session=session)
         except Exception as ex:
             print(ex)
             raise SaveSessionException(session_id=session.id)
