@@ -32,6 +32,9 @@ class InvalidTwitchTokenException(Exception):
 class InvalidAuthGrantCodeException(Exception):
     pass
 
+class InvalidAuthGrantStateException(Exception):
+    pass
+
 class TwitchTokenFromCodeException(Exception):
     pass
 

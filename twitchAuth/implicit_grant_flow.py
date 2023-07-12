@@ -25,8 +25,8 @@ class ImplicitGrantFlow(SessionManager):
 
         return token
 
-    def auth_url(self, session_id: str) -> str:
-        session = self.get_session(session_id)
+    def auth_url(self, username: str, session_id: str) -> str:
+        session = self.get_session(username=username, id=session_id)
 
         queries = {
             "client_id": "",
@@ -34,7 +34,7 @@ class ImplicitGrantFlow(SessionManager):
             "redirect_uri": self.redirect_url,
             "response_type": "token",
             "scope": "%20".join(session.scopes),
-            "state": session.id
+            "state": f'{username}:{session.id}'
         }
 
         query = urllib.parse.urlencode(queries, safe="%")
@@ -48,8 +48,14 @@ class ImplicitGrantFlow(SessionManager):
         if access_token == "":
             raise InvalidTwitchTokenException
 
-        session = self.get_session(state)
+        try:
+            username = state.split(":")[0]
+            session_id = state.split(":")[1]
+        except Exception as ex:
+            raise InvalidAuthGrantStateException
+
+        session = self.get_session(username=username, id=session_id)
 
         session.status = SESSION_STATE_VALID
-        self.save_session(session)
+        self.save_session(username=username, session=session)
         self.tokens.save(session.id, Token(type=TOKEN_TYPE_ACCESS, token=access_token, token_expire=0, scopes=session.scopes))

@@ -3,7 +3,7 @@ from urllib.parse import urlencode
 from loguru import logger
 
 from twitchAuth.consts import SESSION_STATE_INVALID, SESSION_STATE_VALID, SESSION_TYPE_USER, TOKEN_TYPE_ACCESS, TOKEN_TYPE_REFRESH
-from twitchAuth.exceptions import InvalidAuthGrantCodeException, TokenNotFoundException, TwitchAuthorizeException, TwitchRefreshTokenException, TwitchSessionNotValidException, TwitchTokenFromCodeException
+from twitchAuth.exceptions import InvalidAuthGrantCodeException, InvalidAuthGrantStateException, TokenNotFoundException, TwitchAuthorizeException, TwitchRefreshTokenException, TwitchSessionNotValidException, TwitchTokenFromCodeException
 from twitchAuth.session import Session, SessionManager, SessionStore
 from twitchAuth.token import Token, TokenStore
 
@@ -23,14 +23,14 @@ class CodeGrantFlow(SessionManager):
 
         super().__init__(sessions=sessions, session_type=SESSION_TYPE_USER)
 
-    def get_token(self ,session_id: str) -> Token:
+    def get_token(self, username: str, session_id: str) -> Token:
         """
         get_token checks if the given session exists and has a valid token in the TokenStore.
         This function does not handle token expiration, so that has to be handled in your implementation of TokenStore.
         If a valid token cannot be returned, get_token() checks for a refresh token and tries to refresh the access token.
         If the token is refreshed, the new tokens are saved to the TokenStore, and the access_token is returned.
         """
-        session = self.get_session(session_id)
+        session = self.get_session(username=username, id= session_id)
 
         token = self.tokens.get(session_id, TOKEN_TYPE_ACCESS)
         if not token:
@@ -73,11 +73,11 @@ class CodeGrantFlow(SessionManager):
 
         return Token()
 
-    def auth_url(self, session_id: str, force_verify: bool = False) -> str:
+    def auth_url(self, username: str, session_id: str, force_verify: bool = False) -> str:
         """
         auth_url generates the url the user has to navigate to in their browser in order to grant your app permissions for the given scopes.
         """
-        session = self.get_session(id=session_id)
+        session = self.get_session(username=username, id=session_id)
 
         queries = {
             "client_id": self.client_id,
@@ -85,7 +85,7 @@ class CodeGrantFlow(SessionManager):
             "redirect_uri": self.redirect,
             "response_type": "code",
             "scope": "%20".join(session.scopes),
-            "state": session_id
+            "state": f'{username}:{session_id}'
         }
 
         query = urlencode(queries, safe="%")
@@ -103,7 +103,13 @@ class CodeGrantFlow(SessionManager):
         if not code:
             raise InvalidAuthGrantCodeException
 
-        session = self.get_session(state)
+        try:
+            username = state.split(":")[0]
+            session_id = state.split(":")[1]
+        except Exception as ex:
+            raise InvalidAuthGrantStateException
+
+        session = self.get_session(username=username, id=session_id)
 
         queries = {
             "client_id": self.client_id,
